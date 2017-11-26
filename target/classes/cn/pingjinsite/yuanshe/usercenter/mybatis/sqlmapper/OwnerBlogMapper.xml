@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.usercenter.mybatis.mapper.OwnerBlogMapper" >
+
+	<resultMap id="blogResultMap" type="cn.pingjinsite.yuanshe.community.mybatis.vo.BlogVo">
+		<id property="id" column="id"/>
+		<result property="url" column="url"/>
+		<result property="title" column="title"/>
+		<result property="thumbnail" column="thumbnail"/>
+		<result property="resume" column="resume"/>
+		<result property="classify" column="classify"/>
+		<result property="time" column="time"/>
+		<association property="user" javaType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+			<id property="id" column="userid"/>
+			<result property="nickname" column="nickname"/>
+		</association>
+	</resultMap>
+
+	<select id="listBlog"  resultType="cn.pingjinsite.yuanshe.community.mybatis.vo.BlogVo">
+		SELECT
+			blog.id AS id,
+			blog.url AS url,
+			blog.title AS title,
+			blog.thumbnail AS thumbnail,
+			classify.`name` AS classify,
+			blog.resume AS resume,
+			DATE_FORMAT(
+				blog.createtime,
+				'%Y-%m-%d %H:%i:%s'
+			) AS createtime
+		FROM
+			blog
+		INNER JOIN classify ON blog.classify = classify.sign
+		WHERE
+			blog.audit = 1
+		AND blog.`status` = 1
+		AND blog.user_id = #{id}
+		ORDER BY
+			blog.createtime DESC
+		LIMIT #{start},
+		 #{pageSize}
+	</select>
+
+	<select id="listBlogCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			blog
+		WHERE
+			blog.audit = 1
+		AND blog.`status` = 1
+		AND blog.user_id = #{id}
+	</select>
+	
+	<update id="deleteBlog">
+		UPDATE blog
+		SET `status` = 0
+		WHERE
+			id = #{id}
+	</update>
+	
+	<select id="isExistHistory" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			read_history
+		WHERE
+			blog_id = #{blogId}
+		AND user_id = #{userId}
+	</select>
+	
+	<insert id="insertBlogReadHistory">
+		INSERT INTO read_history (
+			blog_id,
+			user_id,
+			time,
+			STATUS,
+			num
+		)
+		VALUE
+			(#{blogId}, #{userId}, NOW(), 1, 1)
+	</insert>
+	
+	<update id="updateRHStatus">
+		UPDATE read_history
+		SET time = NOW(),
+		 `status` = 1,
+		 num = num+1
+		WHERE
+			blog_id = #{blogId}
+		AND user_id = #{userId}
+	</update>
+	
+	<select id="listReadHistory" resultMap="blogResultMap">
+		SELECT
+			blog.id AS id,
+			blog.url AS url,
+			blog.title AS title,
+			blog.thumbnail AS thumbnail,
+			classify.`name` AS classify,
+			blog.resume AS resume,
+			DATE_FORMAT(
+				read_history.time,
+				'%Y-%m-%d %H:%i:%s'
+			) AS time,
+			user_info.user_id AS userid,
+			user_info.nickname AS nickname
+		FROM
+			blog
+		INNER JOIN classify
+		INNER JOIN read_history
+		INNER JOIN user_info ON blog.classify = classify.sign
+		AND blog.id = read_history.blog_id
+		AND blog.user_id = user_info.user_id
+		WHERE
+			read_history.user_id = #{id}
+			AND read_history.`status` = 1
+		ORDER BY
+			read_history.time DESC
+		LIMIT #{start},
+		 #{pageSize}
+	</select>
+	
+	<select id="listRHistoryCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			blog
+		INNER JOIN classify
+		INNER JOIN read_history
+		INNER JOIN user_info ON blog.classify = classify.sign
+		AND blog.id = read_history.blog_id
+		AND blog.user_id = user_info.user_id
+		WHERE
+			read_history.user_id = #{id}
+			AND read_history.`status` = 1
+	</select>
+	
+	<update id="emptyReadHistory">
+		UPDATE read_history
+		SET `status` = 0
+		WHERE
+			user_id = #{id}
+	</update>
+</mapper>

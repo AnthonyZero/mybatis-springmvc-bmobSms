@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.usercenter.mybatis.mapper.OwnerCollectMapper" >
+
+	<resultMap id="blogResultMap" type="cn.pingjinsite.yuanshe.community.mybatis.vo.BlogVo">
+		<id property="id" column="id"/>
+		<result property="url" column="url"/>
+		<result property="title" column="title"/>
+		<result property="thumbnail" column="thumbnail"/>
+		<result property="resume" column="resume"/>
+		<result property="classify" column="classify"/>
+		<result property="createtime" column="createtime"/>
+		<association property="user" javaType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+			<id property="id" column="userid"/>
+			<result property="nickname" column="nickname"/>
+			<result property="headImg" column="headImg"/>
+			<result property="occupation" column="occupation"/>
+			<result property="company" column="company"/>
+		</association>
+	</resultMap>
+
+
+	<select id="listCollects" resultMap="blogResultMap">
+		SELECT
+			blog.id AS id,
+			blog.url AS url,
+			blog.title AS title,
+			blog.thumbnail AS thumbnail,
+			classify.`name` AS classify,
+			blog.resume AS resume,
+			DATE_FORMAT(
+				blog.createtime,
+				'%Y-%m-%d %H:%i:%s'
+			) AS createtime,
+			blog.user_id AS userid,
+			user_info.nickname AS nickname,
+			user_info.head_img AS headImg,
+			user_info.occupation AS occupation,
+			user_info.company AS company
+		FROM
+			(
+				SELECT
+					blog_id,
+					action,
+					createtime
+				FROM
+					(
+						SELECT
+							*
+						FROM
+							collect
+						WHERE
+							user_id = #{id}
+						ORDER BY
+							createtime DESC
+					) AS _collect
+				GROUP BY
+					blog_id
+				HAVING
+					action = 1
+			) AS _c
+		INNER JOIN blog
+		INNER JOIN user_info
+		INNER JOIN classify ON _c.blog_id = blog.id
+		AND blog.user_id = user_info.user_id
+		AND blog.classify = classify.sign
+		WHERE
+			blog.`status` = 1
+		ORDER BY _c.createtime DESC
+			LIMIT #{start},#{pageSize}
+	</select>
+	
+	<select id="listCollectsCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			(
+				SELECT
+					blog_id,
+					action,
+					createtime
+				FROM
+					(
+						SELECT
+							*
+						FROM
+							collect
+						WHERE
+							user_id = #{id}
+						ORDER BY
+							createtime DESC
+					) AS _collect
+				GROUP BY
+					blog_id
+				HAVING
+					action = 1
+			) AS _c
+		INNER JOIN blog
+		INNER JOIN user_info
+		INNER JOIN classify ON _c.blog_id = blog.id
+		AND blog.user_id = user_info.user_id
+		AND blog.classify = classify.sign
+		WHERE
+			blog.`status` = 1
+	</select>
+</mapper>

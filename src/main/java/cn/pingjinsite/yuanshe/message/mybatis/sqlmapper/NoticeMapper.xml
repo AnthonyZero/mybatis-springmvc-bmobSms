@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.message.mybatis.mapper.NoticeMapper" >
+	
+  	<insert id="insertNotice" parameterType="cn.pingjinsite.yuanshe.message.mybatis.vo.NoticeVo">
+  		INSERT notice (
+			user_id,
+			type,
+			title,
+			content,
+			createtime,
+			STATUS
+		)
+		VALUES
+			(#{userId}, #{type}, #{title}, #{content}, NOW(), 1)
+  	</insert>
+  	
+  	<select id="list" resultType="cn.pingjinsite.yuanshe.message.mybatis.vo.NoticeVo">
+  		SELECT
+			id AS id,
+			user_id AS userId,
+			type AS type,
+			title AS title,
+			content AS content,
+			DATE_FORMAT(createtime,'%Y-%m-%d') AS createtime,
+			`status` AS `status`
+		FROM
+			notice
+		WHERE
+			user_id = #{userId}
+			AND `status` = 1
+		ORDER BY notice.createtime DESC
+  	</select>
+  	
+  	<update id="deleteNotice">
+  		UPDATE notice
+		SET `status` = 0
+		WHERE
+			id = #{id}
+  	</update>
+</mapper>

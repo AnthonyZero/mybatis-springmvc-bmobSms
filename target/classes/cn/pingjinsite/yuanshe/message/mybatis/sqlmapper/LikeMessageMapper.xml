@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.message.mybatis.mapper.LikeMessageMapper" >
+	
+  	<select id="list" resultType="cn.pingjinsite.yuanshe.message.mybatis.vo.LikeMessageVo">
+  		SELECT
+			`like`.id AS id,
+			blog.id AS blogId,
+			blog.title AS title,
+			blog.thumbnail AS thumbnail,
+			user_info.user_id AS userId,
+			user_info.nickname AS nickname,
+			user_info.head_img AS headImg,
+			user_info.occupation AS occupation,
+			user_info.company AS company,
+			DATE_FORMAT(`like`.createtime,'%Y-%m-%d %H:%i:%s') AS createtime
+		FROM
+			blog
+		INNER JOIN `like` 
+		INNER JOIN user_info ON blog.id = `like`.blog_id
+		AND `like`.user_id = user_info.user_id
+		WHERE
+			blog.user_id = #{userId}
+		AND `like`.action = 1
+		AND `like`.`status` = 1
+		ORDER BY `like`.createtime DESC
+		LIMIT #{start},#{pageSize}
+  	</select>
+  	
+  	<select id="listCount" resultType="java.lang.Integer">
+  		SELECT
+			COUNT(*)
+		FROM
+			blog
+		INNER JOIN `like` 
+		INNER JOIN user_info ON blog.id = `like`.blog_id
+		AND `like`.user_id = user_info.user_id
+		WHERE
+			blog.user_id = #{userId}
+		AND `like`.action = 1
+		AND `like`.`status` = 1
+		ORDER BY `like`.createtime DESC
+  	</select>
+  	
+  	<update id="deleteLikeMessage">
+  		UPDATE `like`
+		SET `status` = 0
+		WHERE
+			id = #{id}
+  	</update>
+</mapper>

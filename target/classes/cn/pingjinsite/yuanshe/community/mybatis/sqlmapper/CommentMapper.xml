@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.community.mybatis.mapper.CommentMapper" >
+
+	<resultMap id="commentResultMap" type="cn.pingjinsite.yuanshe.community.mybatis.vo.CommentVo">
+		<id property="id" column="id"/>
+		<result property="blogId" column="blogId"/>
+		<result property="type" column="type"/>
+		<result property="content" column="content"/>
+		<result property="time" column="time"/>
+		<association property="from" javaType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+			<id property="id" column="fromId"/>
+			<result property="nickname" column="fromNickname"/>
+			<result property="headImg" column="fromHeadImg"/>
+		</association>
+		<association property="to" javaType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+			<id property="id" column="toId"/>
+			<result property="nickname" column="toNickname"/>
+			<result property="headImg" column="toHeadImg"/>
+		</association>
+	</resultMap>
+
+	<select id="list" resultMap="commentResultMap">
+		SELECT
+			`comment`.id AS id,
+			`comment`.blog_id AS blogId,
+			`comment`.type AS type,
+			`comment`.content AS content,
+			DATE_FORMAT(`comment`.time,'%Y-%m-%d %H:%i:%s') AS time,
+			user_info.user_id AS fromId,
+			user_info.nickname AS fromNickname,
+			user_info.head_img AS fromHeadImg,
+			_t.user_id AS toId,
+			_t.nickname AS toNickname,
+			_t.head_img AS toHeadImg
+		FROM
+			`comment`
+		JOIN user_info on `comment`.from_id = user_info.user_id
+		LEFT JOIN user_info AS _t ON `comment`.to_id = _t.user_id
+		WHERE `comment`.blog_id = #{blogId}
+		ORDER BY `comment`.time DESC
+		LIMIT #{start},#{pageSize}
+	</select>
+	
+	<select id="listCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			`comment`
+		JOIN user_info on `comment`.from_id = user_info.user_id
+		LEFT JOIN user_info AS _t ON `comment`.to_id = _t.user_id
+		WHERE `comment`.blog_id = #{blogId}
+	</select>
+	
+	<select id="getComment" resultMap="commentResultMap">
+		SELECT
+			`comment`.id AS id,
+			`comment`.blog_id AS blogId,
+			`comment`.type AS type,
+			`comment`.content AS content,
+			DATE_FORMAT(
+				`comment`.time,
+				'%Y-%m-%d %H:%i:%s'
+			) AS time,
+			user_info.user_id AS fromId,
+			user_info.nickname AS fromNickname,
+			user_info.head_img AS fromHeadImg,
+			_t.user_id AS toId,
+			_t.nickname AS toNickname,
+			_t.head_img AS toHeadImg
+		FROM
+			`comment`
+		JOIN user_info ON `comment`.from_id = user_info.user_id
+		LEFT JOIN user_info AS _t ON `comment`.to_id = _t.user_id
+		WHERE
+			`comment`.id = #{id}
+	</select>
+	
+	<insert id="insertComment" parameterType="cn.pingjinsite.yuanshe.community.mybatis.vo.CommentVo"
+		keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `comment` (
+			blog_id,
+			type,
+			from_id,
+			to_id,
+			content,
+			time,
+			STATUS
+		)
+		VALUE
+			(#{blogId}, #{type}, #{from.id}, #{to.id}, #{content}, NOW(),1)
+	</insert>
+	
+	<update id="blogCommentRise">
+		UPDATE statistics
+		SET discuss = discuss + 1
+		WHERE
+			blog_id = #{blogId}
+	</update>
+</mapper>

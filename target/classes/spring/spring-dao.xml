@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<!-- 加载数据库、数据源配置文件 -->
+	<!-- 若以后换到正式库，可直接切换为mysql-run.properties -->
+	<context:property-placeholder location="classpath:jdbc/mysql-test.properties"/>
+	
+	<!-- 配置Druid数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" 
+		init-method="init" destroy-method="close">
+		<!-- 数据库连接属性 -->
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<!-- 初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时 -->
+		<property name="initialSize" value="${druid.initialSize}"></property>
+		<!-- 最小连接池数量 -->
+		<property name="minIdle" value="${druid.minIdle}"></property>
+		<!-- 最大连接池数量 -->
+		<property name="maxActive" value="${druid.maxActive}"></property>
+		<!-- 获取连接时最大等待时间，单位毫秒 -->
+		<property name="maxWait" value="${druid.maxWait}"></property>
+		<!-- 间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}"></property>
+		<!-- 一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}"></property>
+		<!-- 用来检测连接是否有效的sql，要求是一个查询语句，常用select 'x' -->
+		<property name="validationQuery" value="${druid.validationQuery}"></property>
+		<!-- 建议配置为true，不影响性能，并且保证安全性 -->
+		<property name="testWhileIdle" value="${druid.testWhileIdle}"></property>
+		<!-- 申请连接时执行validationQuery检测连接是否有效 -->
+		<property name="testOnBorrow" value="${druid.testOnBorrow}"></property>
+		<!-- 归还连接时执行validationQuery检测连接是否有效 -->
+		<property name="testOnReturn" value="${druid.testOnReturn}"></property>
+		<!-- 配置监控统计拦截的filter -->
+		<property name="filters" value="${druid.filters}"></property>
+	</bean>
+	
+	<!-- mybatis会话工厂 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:mybatis.xml"></property>
+	</bean>
+	
+	<!-- mapper扫描器 注入到IOC中-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 扫描包路径，如果需要扫描多个包，中间使用半角逗号隔开 -->
+		<property name="basePackage" value="cn.pingjinsite.yuanshe.*.mybatis"></property>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+</beans>

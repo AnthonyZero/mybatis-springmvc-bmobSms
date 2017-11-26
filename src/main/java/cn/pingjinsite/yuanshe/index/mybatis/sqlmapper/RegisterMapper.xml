@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.index.mybatis.mapper.RegisterMapper" >
+	
+  	<select id="findPhoneNumber" parameterType="String" resultType="String">
+  		SELECT
+			identify
+		FROM
+			`user`
+		WHERE
+			identify = #{value}
+		AND type = 'phone'
+  	</select>
+	
+	<select id="findOauthAccount" resultType="String">
+		SELECT
+			identify
+		FROM
+			`user`
+		WHERE
+			identify = #{uid}
+		AND type = #{type}
+	</select>
+	
+	<insert id="insertUser" parameterType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo" 
+			useGeneratedKeys="true"	keyProperty="id">
+		INSERT `user` (
+			identify,
+			PASSWORD,
+			type,
+			createtime
+		)
+		VALUES
+			(#{identify}, #{password}, #{type}, NOW())
+	</insert>
+	
+	<insert id="insertUserExtra" parameterType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+		INSERT user_extra (user_id, password_text)
+		VALUES
+			(#{id}, #{passwordText})
+	</insert>
+	
+	<insert id="insertUserInfo" parameterType="cn.pingjinsite.yuanshe.usercenter.mybatis.vo.UserVo">
+		<choose>
+			<when test="type == 'phone' ">
+				INSERT user_info (user_id, nickname)
+				VALUES
+					(#{id}, #{nickname})
+			</when>
+			<!-- 其他注册方式 -->
+			<otherwise>
+				INSERT user_info (user_id, nickname, head_img)
+				VALUES
+					(#{id}, #{nickname}, #{headImg})
+			</otherwise>
+		</choose>
+	</insert>
+	
+	<update id="updateAccessToken">
+		UPDATE `user`
+		SET `password` = #{token}
+		WHERE
+			identify = #{uid}
+		AND type = #{type}
+	</update>
+</mapper>

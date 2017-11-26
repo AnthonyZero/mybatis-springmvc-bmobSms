@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.pingjinsite.yuanshe.usercenter.mybatis.mapper.UpdateInfoMapper" >
+	
+  	<update id="updateHeadImg">
+  		UPDATE user_info
+		SET head_img = #{url}
+		WHERE
+			user_id = #{userId}
+  	</update>
+  	
+  	<update id="updateUserInfo">
+  		UPDATE user_info
+  		<if test="key == 'nickname' ">
+  			SET nickname = #{value}
+  		</if>
+  		<if test="key == 'sex' ">
+  			SET sex = #{value}
+  		</if>
+  		<if test="key == 'headImg' ">
+  			SET head_img = #{value}
+  		</if>
+  		<if test="key == 'occupation' ">
+  			SET occupation = #{value}
+  		</if>
+  		<if test="key == 'company' ">
+  			SET company = #{value}
+  		</if>
+  		<if test="key == 'address' ">
+  			SET address = #{value}
+  		</if>
+  		<if test="key == 'synopsis' ">
+  			SET synopsis = #{value}
+  		</if>
+  		WHERE
+			user_id = #{userId}
+  	</update>
+  	
+  	<update id="updatePassword">
+  		UPDATE `user`
+		SET `password` = #{password}
+		WHERE
+			id = #{userId}
+  	</update>
+  	
+  	<update id="updatePasswordText">
+  		UPDATE user_extra
+		SET password_text = #{text}
+		WHERE
+			user_id = #{userId}
+  	</update>
+  	
+  	<update id="changeUserIdentify">
+  		UPDATE `user`
+		SET identify = #{phone}
+		WHERE
+			id = #{userId}
+  	</update>
+</mapper>

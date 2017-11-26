@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	
+	<!-- 加载顺序：上下文参数–> listener –> filter –> servlet -->
+	
+	<!-- Spring IOC容器 -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring/spring-beans.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<!-- log4j配置 -->
+	<context-param>
+		<param-name>Log4jConfigLocation</param-name>
+		<param-value>classpath:log4j.properties</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>
+	
+	<!-- UTF-8编码过滤器 -->
+  	<filter>
+  		<filter-name>CharacterEncodingFilter</filter-name>
+  		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+  		<init-param>
+  			<param-name>encoding</param-name>
+	      	<param-value>UTF-8</param-value>
+	    </init-param>
+  	</filter>
+  	<filter-mapping>
+  		<filter-name>CharacterEncodingFilter</filter-name>
+  		<url-pattern>/*</url-pattern>
+  	</filter-mapping>
+  	
+  	<!--跨域请求过滤器 -->
+  	<filter>
+		<description>跨域请求授权</description>
+		<filter-name>crossDomainAuthorizationFilter</filter-name>
+		<filter-class>cn.pingjinsite.framework.filter.CrossDomainAuthorizationFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>crossDomainAuthorizationFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- Druid URL监控 -->
+	<filter>
+	  	<filter-name>DruidWebStatFilter</filter-name>
+	  	<filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+	  	<init-param>
+	  		<param-name>exclusions</param-name>
+	  		<param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*</param-value>
+	  	</init-param>
+	  	<!-- 配置profileEnable能够监控单个url调用的sql列表 -->
+	  	<init-param>
+		    <param-name>profileEnable</param-name>
+		    <param-value>true</param-value>
+		</init-param>
+  	</filter>
+  	<filter-mapping>
+  		<filter-name>DruidWebStatFilter</filter-name>
+  		<url-pattern>/*</url-pattern>
+  	</filter-mapping>
+  	
+  	<!-- Spring MVC配置文件 -->
+  	<servlet>
+  		<servlet-name>SpringMVC</servlet-name>
+  		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  		<init-param>
+  			<param-name>contextConfigLocation</param-name>
+  			<param-value>classpath:spring/spring-mvc.xml</param-value>
+  		</init-param>
+  		<load-on-startup>1</load-on-startup>
+  	</servlet>
+	<servlet-mapping>
+		<servlet-name>SpringMVC</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	
+	<!-- 配置 Druid 监控信息显示页面 -->
+	<servlet>
+		<servlet-name>DruidStatView</servlet-name>
+      	<servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+      	<init-param>  
+		    <!-- 不允许清空统计数据 -->  
+		    <param-name>resetEnable</param-name>  
+		    <param-value>false</param-value>  
+	    </init-param> 
+	    <!-- 配置监控页面访问用户名和密码 -->
+	    <init-param>  
+		    <!-- 用户名 -->  
+		    <param-name>loginUsername</param-name>  
+		    <param-value>druid</param-value>  
+	    </init-param>  
+	    <init-param>  
+		    <!-- 密码 -->  
+		    <param-name>loginPassword</param-name>  
+		    <param-value>pingjin</param-value>  
+	    </init-param>  
+    </servlet>
+  	<servlet-mapping>
+      	<servlet-name>DruidStatView</servlet-name>
+      	<!-- 访问路径为**/druid/index.html -->
+      	<url-pattern>/druid/*</url-pattern>
+  	</servlet-mapping>
+</web-app>
