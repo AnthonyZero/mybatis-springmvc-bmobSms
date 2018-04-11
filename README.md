@@ -1,2 +1,2 @@
-# mybatis-springmvc-maven-bmobSms
+# mybatis-springmvc-bmobSms
 graduation project—yuanshe app API(JAVA)
